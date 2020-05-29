@@ -1,0 +1,77 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="card-group py-2">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    {{ user.fullName }}
+                    <small class="text-muted">· @{{ user.username }}</small>
+                </h5>
+                {# check user if authenticated or not if not then you click to follow button goes to login page 
+                    and also check user authenticated so see follow button otherwise not seen. #}
+                {% if is_granted('ROLE_USER') and user != app.user %}
+                    {# Check contains is a method check val is in array and check currently authenticated
+                    user browsing this page #}
+                    {% if user.followers.contains(app.user) == false %}
+                        <a href="{{ path('following_follow', { 'id': user.id }) }}" 
+                           class="btn btn-outline-primary">Follow</a>
+                    {% else %}
+                        <a href="{{ path('following_unfollow', { 'id': user.id }) }}" 
+                           class="btn btn-outline-danger">Unfollow</a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card-group py-2">
+        <div class="card">
+            <div class="card-body">
+                {# for number of count followers ans user.followers id which is set on 
+                messages.en.xlf file #}
+                <h5>{{ 'Followers'|transchoice(user.followers|length) }}</h5>
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for follower in user.followers %}
+                    <li class="list-group-item">
+                        <a href="{{ path('micro_post_user',
+                            {'username': follower.username}) }}">
+                            @{{ follower.username }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                {# for number of count following ans user.following id which is set on 
+                messages.en.xlf file #}
+                <h5>{{ 'Following'|transchoice(user.following|length) }}</h5>
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for following in user.following %}
+                    <li class="list-group-item">
+                        <a href="{{ path('micro_post_user',
+                            {'username': following.username}) }}">
+                            @{{ following.username }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    {% for post in posts %}
+        {{ include('micro-post/row-post.html.twig', { 'post': post }) }}
+
+        <small class="d-block text-right mt-3">
+            {% if is_granted('edit', post) %}
+                <a href="{{ path('micro_post_edit', {'id': post.id}) }}">Edit</a>
+            {% endif %}
+            {% if is_granted('delete', post) %}
+                <a href="{{ path('micro_post_delete', {'id': post.id}) }}">Delete</a>
+            {% endif %}
+        </small>
+    {% endfor %}
+{% endblock %}
